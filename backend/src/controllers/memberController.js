@@ -288,12 +288,114 @@ const toggleProudMember = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Get all applications with optional status filter (?status=pending|approved)
+ * @route   GET /api/members/applications
+ * @access  Private (Admin & Board)
+ */
+const getApplications = async (req, res, next) => {
+  try {
+    const { status } = req.query;
+    const filter = {};
+    if (status === 'pending') {
+      filter.status = false;
+    } else if (status === 'approved') {
+      filter.status = true;
+    }
+
+    const applications = await MemberApplication.find(filter).sort({ createdAt: -1 });
+    res.status(200).json({
+      success: true,
+      count: applications.length,
+      data: applications,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get single application by ID
+ * @route   GET /api/members/applications/:id
+ * @access  Private (Admin & Board)
+ */
+const getApplicationById = async (req, res, next) => {
+  try {
+    const application = await MemberApplication.findById(req.params.id);
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: 'Membership application not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: application,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Delete application
+ * @route   DELETE /api/members/applications/:id
+ * @access  Private (Admin & Board)
+ */
+const deleteApplication = async (req, res, next) => {
+  try {
+    const application = await MemberApplication.findByIdAndDelete(req.params.id);
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: 'Membership application not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Membership application deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Delete member user account
+ * @route   DELETE /api/members/:id
+ * @access  Private (Admin & Board)
+ */
+const deleteMember = async (req, res, next) => {
+  try {
+    const member = await User.findByIdAndDelete(req.params.id);
+    if (!member) {
+      return res.status(404).json({
+        success: false,
+        message: 'Member not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Member deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   submitApplication,
+  getApplications,
   getPendingApplications,
+  getApplicationById,
   approveApplication,
+  deleteApplication,
   getMemberDashboard,
   getAllMembers,
   updateMemberPoints,
   toggleProudMember,
+  deleteMember,
 };

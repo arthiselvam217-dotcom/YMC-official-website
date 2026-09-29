@@ -315,14 +315,118 @@ const getStudentProfileSummary = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Delete library resource
+ * @route   DELETE /api/library/resources/:id
+ * @access  Private (Admin & Board)
+ */
+const deleteLibraryResource = async (req, res, next) => {
+  try {
+    const resource = await LibraryResource.findByIdAndDelete(req.params.id);
+    if (!resource) {
+      return res.status(404).json({
+        success: false,
+        message: 'Library resource not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Library resource deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Delete elective resource
+ * @route   DELETE /api/library/electives/:id
+ * @access  Private (Admin & Board)
+ */
+const deleteElectiveResource = async (req, res, next) => {
+  try {
+    const elective = await ElectiveResource.findByIdAndDelete(req.params.id);
+    if (!elective) {
+      return res.status(404).json({
+        success: false,
+        message: 'Elective resource not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Elective resource deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Delete student showcase work
+ * @route   DELETE /api/library/showcase/:id
+ * @access  Private (Admin & Board)
+ */
+const deleteShowcaseWork = async (req, res, next) => {
+  try {
+    const work = await StudentWork.findByIdAndDelete(req.params.id);
+    if (!work) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student work item not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Student work deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get aggregate stats for library & showcase
+ * @route   GET /api/library/stats
+ * @access  Public
+ */
+const getLibraryStats = async (req, res, next) => {
+  try {
+    const [resourcesCount, electivesCount, worksCount, usage] = await Promise.all([
+      LibraryResource.countDocuments(),
+      ElectiveResource.countDocuments(),
+      StudentWork.countDocuments(),
+      UsageCounter.findOne({ feature: 'library' }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalResources: resourcesCount,
+        totalElectives: electivesCount,
+        totalShowcaseWorks: worksCount,
+        libraryViews: usage ? usage.count : 0,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getLibraryResources,
   addLibraryResource,
+  deleteLibraryResource,
   getElectiveResources,
   addElectiveResource,
+  deleteElectiveResource,
   getShowcaseWorks,
   getWorkDetail,
   createShowcaseWork,
+  deleteShowcaseWork,
   submitWorkViaEmail,
   getStudentProfileSummary,
+  getLibraryStats,
 };

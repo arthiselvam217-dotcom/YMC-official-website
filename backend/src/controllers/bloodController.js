@@ -269,13 +269,117 @@ const getBloodStats = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Get all blood requests (including fulfilled/cancelled)
+ * @route   GET /api/bloodshare/needs/all
+ * @access  Public
+ */
+const getAllBloodNeeds = async (req, res, next) => {
+  try {
+    const { status } = req.query;
+    const filter = status ? { status } : {};
+    const needs = await BloodRequest.find(filter).sort({ createdAt: -1 });
+    res.status(200).json({
+      success: true,
+      count: needs.length,
+      data: needs,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Update blood request status (e.g. open -> fulfilled / cancelled)
+ * @route   PATCH /api/bloodshare/needs/:id/status
+ * @access  Public
+ */
+const updateBloodNeedStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    if (!status || !['open', 'fulfilled', 'cancelled'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid status (open, fulfilled, cancelled) is required',
+      });
+    }
+
+    const request = await BloodRequest.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true, runValidators: true }
+    );
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Blood request not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Blood request status updated to ${status}`,
+      data: request,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get all registered donors
+ * @route   GET /api/bloodshare/donors
+ * @access  Public
+ */
+const getAllDonors = async (req, res, next) => {
+  try {
+    const donors = await BloodDonor.find().sort({ createdAt: -1 });
+    res.status(200).json({
+      success: true,
+      count: donors.length,
+      data: donors,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get donor by ID
+ * @route   GET /api/bloodshare/donors/:id
+ * @access  Public
+ */
+const getDonorById = async (req, res, next) => {
+  try {
+    const donor = await BloodDonor.findById(req.params.id);
+    if (!donor) {
+      return res.status(404).json({
+        success: false,
+        message: 'Donor not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: donor,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getActiveBloodNeeds,
+  getAllBloodNeeds,
   createBloodNeed,
+  updateBloodNeedStatus,
   registerDonor,
   searchDonors,
   getDonorProfile,
   updateDonorProfile,
   deleteDonorProfile,
   getBloodStats,
+  getAllDonors,
+  getDonorById,
 };

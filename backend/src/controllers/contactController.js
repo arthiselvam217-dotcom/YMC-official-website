@@ -56,6 +56,25 @@ const submitContactMessage = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Get club contact information
+ * @route   GET /api/contact
+ * @access  Public
+ */
+const getContactInfo = (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      club: 'Youth Media Club (YMC GCT)',
+      institution: 'Government College of Technology',
+      address: 'Thadagam Road, Coimbatore - 641013, Tamil Nadu, India',
+      email: process.env.EMAIL_USER || 'youthclubgct@gmail.com',
+      website: 'https://ymcgct.org',
+    },
+  });
+};
+
 module.exports = {
   submitContactMessage,
+  getContactInfo,
 };

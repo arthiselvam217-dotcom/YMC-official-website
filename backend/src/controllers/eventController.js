@@ -7,7 +7,9 @@ const { Event, EventRegistration } = require('../models');
  */
 const getAllEvents = async (req, res, next) => {
   try {
-    const events = await Event.find({ isActive: true }).sort({ date: -1, createdAt: -1 });
+    const { all } = req.query;
+    const filter = all === 'true' ? {} : { isActive: true };
+    const events = await Event.find(filter).sort({ date: -1, createdAt: -1 });
     res.status(200).json({
       success: true,
       count: events.length,
@@ -211,6 +213,30 @@ const getEventRegistrations = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Delete event registration
+ * @route   DELETE /api/events/registrations/:id
+ * @access  Private (Admin & Board)
+ */
+const deleteRegistration = async (req, res, next) => {
+  try {
+    const reg = await EventRegistration.findByIdAndDelete(req.params.id);
+    if (!reg) {
+      return res.status(404).json({
+        success: false,
+        message: 'Registration not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Registration deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllEvents,
   getEventById,
@@ -219,4 +245,5 @@ module.exports = {
   updateEvent,
   deleteEvent,
   getEventRegistrations,
+  deleteRegistration,
 };

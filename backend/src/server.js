@@ -10,6 +10,12 @@ dotenv.config();
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 const authRoutes = require('./routes/authRoutes');
+const memberRoutes = require('./routes/memberRoutes');
+const bloodRoutes = require('./routes/bloodRoutes');
+const eventRoutes = require('./routes/eventRoutes');
+const libraryRoutes = require('./routes/libraryRoutes');
+const mediaRoutes = require('./routes/mediaRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -60,8 +66,14 @@ app.get('/api', (req, res) => {
   });
 });
 
-// API Routes (Phase 1: Auth routes; Phase 2 will mount remaining core routes)
+// API Routes (Phase 2: Core API Endpoints fully mounted)
 app.use('/api/auth', authRoutes);
+app.use('/api/members', memberRoutes);
+app.use('/api/bloodshare', bloodRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/library', libraryRoutes);
+app.use('/api/media', mediaRoutes);
+app.use('/api/contact', contactRoutes);
 
 // 404 handler for unknown routes
 app.use((req, res, next) => {
